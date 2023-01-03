@@ -1,0 +1,9 @@
+ product_id |  name  |  sku   | category_id | price |                   specification                   
+------------+--------+--------+-------------+-------+---------------------------------------------------
+ cl11       |        | sd12df | cl          |     0 | {"color":"black","size":"xl"}
+ cl12       | shirt  | nj12bn | cl          |     0 | {"color":"blue","size":"l"}
+ cl13       | jeans  | qw2bn  | cl          |   890 | {"color":"black","size":"xxl"}
+ cl14       | denim  | nj89hb | cl          |  1000 | {"color":"black","size":"xxl","type":"acid wash"}
+ cl15       | palazo | nj89hb | cl          |   900 | {"color":"purple","size":"xl","type":"loose fit"}
+(5 rows)
+
