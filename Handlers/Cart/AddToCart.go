@@ -7,60 +7,132 @@ import (
 	"net/http"
 
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 )
 
-func AddToCart(w http.ResponseWriter, r *http.Request) {
+func AddToCartConsoleHandler(Newcart Datastructures.Cart) {
+	var ResponseMessage string
+	route := AddToCart(Newcart)
 
-	var newcart Datastructures.Cart
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to insert")
+	if route == 441 {
+		ResponseMessage = Support.PrepareStatementError
+	} else if route == 442 {
+		ResponseMessage = Support.OutOfStock
+	} else if route == 443 {
+		ResponseMessage = Support.UnvailableQuanity
+	} else if route == 444 {
+		ResponseMessage = Support.NoQuantityCheck
+	} else if route == 445 {
+		ResponseMessage = Support.InvalidProductId
+	} else if route == 446 {
+		ResponseMessage = Support.InvalidReferenceId
+
+	} else if route == 201 {
+		ResponseMessage = Support.UpdateCartItem
+	} else if route == 202 {
+		ResponseMessage = Support.InsertedCartItem
+	} else if route == 447 {
+		ResponseMessage = Support.QuantityMustBePositive
+	} else {
+		ResponseMessage = Support.ErrorScaning
 	}
 
-	err = json.Unmarshal(reqBody, &newcart)
-	if err != nil {
-		fmt.Fprintf(w, "error unmarshalling")
+	Support.PrintResponse(ResponseMessage)
+}
+func AddToCart(NewCart Datastructures.Cart) int {
+	if NewCart.Quantity <= 0 {
+		return 447
+	}
+	rows := Support.CheckProductId(NewCart.Product_id)
+	if !rows.Next() {
+		return 445
 	}
 
+	rows = Support.CheckReferenceId(NewCart.Reference_id)
 	//check if valid product is there or not
-	if Support.CheckProduct_id(newcart.Product_id) == false {
-		result := fmt.Sprintf("The product does not exsits enter a valid product id")
-		json.NewEncoder(w).Encode(result)
-		return
+	if !rows.Next() {
+		return 446
 	}
-
-	//check if valid product is there or not
-	if Support.CheckReference_id(newcart.Reference_id) == false {
-		result := fmt.Sprintf("The Reference_ID does not exsits enter a valid id")
-		json.NewEncoder(w).Encode(result)
-		return
-	}
-
 	// check if the amount is present inventory or not
-	if CheckQuantity(newcart.Product_id, newcart.Quantity) == false {
-		result := fmt.Sprintf("OUT OF STOCK!!!The selected quanitity is not available please select less number of items")
-		json.NewEncoder(w).Encode(result)
-		return
+	// update inventory
+
+	CheckItemQuantity := CheckQuantity(NewCart.Product_id, NewCart.Quantity)
+	if CheckItemQuantity != 200 {
+		return CheckItemQuantity
 	}
 
-	// update inventory
 	//if product not present then insert or else update
-	if CheckCartProduct(newcart.Reference_id, newcart.Product_id, newcart.Quantity) == false {
-		insertStatement, err := Support.DB.Prepare("INSERT INTO cart(reference_id,product_id,quantity) VALUES($1,$2,$3)")
+	if CheckCartProduct(NewCart.Reference_id, NewCart.Product_id, NewCart.Quantity) != 201 {
+
+		insertStatement, err := Support.DB.Prepare(query.AddCart)
 		if err != nil {
-			fmt.Println("hel")
-			panic(err)
+			return 441
 		}
-		_, err = insertStatement.Exec(newcart.Reference_id, newcart.Product_id, newcart.Quantity)
+		_, err = insertStatement.Exec(NewCart.Reference_id, NewCart.Product_id, NewCart.Quantity)
 		if err != nil {
 			fmt.Println("hello2")
-			panic(err)
+			return 441
 		}
-		result := fmt.Sprint("The product added successfully")
-		json.NewEncoder(w).Encode(result)
-		w.WriteHeader(http.StatusCreated)
+		fmt.Print("The product added successfully")
+		return 202
 
 	}
+	return 441
 
+}
+func AddToCartRoute(w http.ResponseWriter, r *http.Request) {
+
+	var Newcart Datastructures.Cart
+	reqBody, err := ioutil.ReadAll(r.Body)
+
+	var ResponseCode int
+	var ResponseMessage string
+	if err != nil {
+		ResponseCode = Support.NotFound
+		ResponseMessage = Support.InvalidCartFormat
+	}
+
+	err = json.Unmarshal(reqBody, &Newcart)
+	if err != nil {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorUnMarshaling
+	}
+
+	route := AddToCart(Newcart)
+
+	if route == 441 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.PrepareStatementError
+
+	} else if route == 442 {
+		ResponseCode = Support.NotFound
+		ResponseMessage = Support.OutOfStock
+	} else if route == 443 {
+		ResponseCode = Support.Exsits
+		ResponseMessage = Support.UnvailableQuanity
+	} else if route == 444 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.NoQuantityCheck
+	} else if route == 445 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.InvalidProductId
+	} else if route == 446 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.InvalidReferenceId
+
+	} else if route == 201 {
+		ResponseCode = Support.Accepted
+		ResponseMessage = Support.UpdateCartItem
+	} else if route == 202 {
+		ResponseCode = Support.Inserted
+		ResponseMessage = Support.InsertedCartItem
+	} else {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorScaning
+	}
+
+	//check if valid product is there or not
+	w.Header().Add("Content-Type", "application/json")
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
 }

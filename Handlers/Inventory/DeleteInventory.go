@@ -1,35 +1,71 @@
 package Handlers
 
 import (
-	"encoding/json"
 	"fmt"
-
 	"net/http"
 
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 	"github.com/gorilla/mux"
 )
 
-func DeleteInventory(w http.ResponseWriter, r *http.Request) {
+func DeleteInventoryRoute(w http.ResponseWriter, r *http.Request) {
 	x := mux.Vars(r)["id"]
 
-	res, err := Support.DB.Exec("DELETE FROM inventory WHERE product_id=$1", x)
+	var ResponseCode int
+	var ResponseMessage string
+	route := DeleteInventory(x)
+	if route == 442 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ExecStatementError
 
-	if err == nil {
+	} else if route == 443 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.InvalidProductId
+	} else {
+		ResponseCode = Support.Accepted
+		ResponseMessage = Support.InventoryDeleted
+	}
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
+}
+func DeleteInventory(ProductId string) int {
 
-		count, err := res.RowsAffected()
-		if err == nil {
-			if count == 0 {
-				result := fmt.Sprint("The value Product_Id Does not exsits, eneter valid id")
-				json.NewEncoder(w).Encode(result)
-				return
-			}
-			result := fmt.Sprint("The value is deleted sucessfully")
-			json.NewEncoder(w).Encode(result)
-		}
-
+	rows := Support.CheckProductId(ProductId)
+	if !rows.Next() {
+		return 443
+	}
+	_, err := Support.DB.Exec(query.DeleteInventory, ProductId)
+	if err != nil {
+		return 442
 	}
 
-	return
+	if err != nil {
+		return 404
+	}
+	return 200
 
+}
+func DeleteInventoryHandlerConsole() {
+	var ProductId string
+	var ResponseMessage string
+	fmt.Println("Please enter a valid ProductId to delete")
+
+	_, err := fmt.Scanln(&ProductId)
+	if err != nil {
+		ResponseMessage = Support.ErrorScaning
+		Support.PrintResponse(ResponseMessage)
+	}
+
+	route := DeleteInventory(ProductId)
+	if route == 442 {
+
+		ResponseMessage = Support.ExecStatementError
+
+	} else if route == 443 {
+		ResponseMessage = Support.InvalidProductId
+	} else {
+		ResponseMessage = Support.InventoryDeleted
+	}
+	Support.PrintResponse(ResponseMessage)
+	return
 }

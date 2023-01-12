@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 	"github.com/gorilla/mux"
 )
@@ -20,7 +21,7 @@ func GetInventory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := Support.DB.Query("SELECT * from inventory WHERE product_id = $1", getproduct_id)
+	rows, err := Support.DB.Query(query.GetInventory, getproduct_id)
 	if err != nil {
 		fmt.Println("err in selecting product")
 	}

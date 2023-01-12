@@ -11,62 +11,81 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func AddItemsToCart(w http.ResponseWriter, r *http.Request) {
+func AddItemsToCartRoute(w http.ResponseWriter, r *http.Request) {
 	Ref_id := mux.Vars(r)["Ref_id"]
 	fmt.Println(Ref_id)
-	itemlist := []Datastructures.Inventory{}
+	ItemList := []Datastructures.Cart{}
 	reqBody, err := ioutil.ReadAll(r.Body)
+	var ResponseCode int
+	var ResponseMessage string
 	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the Id and Quantity only in order to insert")
+		ResponseCode = Support.NotFound
+		ResponseMessage = Support.InvalidCartFormat
 	}
 
-	err = json.Unmarshal([]byte(reqBody), &itemlist)
+	err = json.Unmarshal(reqBody, &ItemList)
 	if err != nil {
-		fmt.Println("err un marshalling")
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorUnMarshaling
+	}
+	for _, v := range ItemList {
+		route := AddToCart(v)
+		if route == 441 {
+			ResponseCode = Support.Error
+			ResponseMessage = Support.PrepareStatementError
+
+		} else if route == 442 {
+			ResponseCode = Support.NotFound
+			ResponseMessage = Support.OutOfStock
+		} else if route == 443 {
+			ResponseCode = Support.Exsits
+			ResponseMessage = Support.UnvailableQuanity
+		} else if route == 444 {
+			ResponseCode = Support.Error
+			ResponseMessage = Support.NoQuantityCheck
+		} else if route == 445 {
+			ResponseCode = Support.Error
+			ResponseMessage = Support.InvalidProductId
+		} else if route == 446 {
+			ResponseCode = Support.Error
+			ResponseMessage = Support.InvalidReferenceId
+
+		} else if route == 201 {
+			ResponseCode = Support.Accepted
+			ResponseMessage = Support.UpdateCartItem
+		} else if route == 202 {
+			ResponseCode = Support.Inserted
+			ResponseMessage = Support.InsertedCartItem
+		} else {
+			ResponseCode = Support.Error
+			ResponseMessage = Support.ErrorScaning
+		}
+
+	}
+	w.Header().Add("Content-Type", "application/json")
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
+}
+func AddItemsToCartConsoleHandler() {
+	fmt.Print("Enter the Reference ID")
+	var ReferenceId string
+	fmt.Scanf("%s", &ReferenceId)
+	rows := Support.CheckReferenceId(ReferenceId)
+	if !rows.Next() {
+		fmt.Println(Support.InvalidReferenceId)
 		return
 	}
 
-	for i, v := range itemlist {
-		fmt.Println(i, v.Product_id, v.Quantity)
-		// AddItem(v)
-		fmt.Println("debug")
-		if Support.CheckProduct_id(v.Product_id) == false {
-			result := fmt.Sprintf("The product does not exsits enter a valid product id")
-			json.NewEncoder(w).Encode(result)
-			return
-		}
-		if !CheckQuantity(v.Product_id, v.Quantity) {
-			response := Datastructures.Response{
-				Status:  http.StatusForbidden,
-				Message: "Product out of Stock",
-			}
-			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
-			return
-
-		}
-		// update inventory
-		//if product not present then insert or else update
-		if !CheckCartProduct(Ref_id, v.Product_id, v.Quantity) {
-			insertStatement, err := Support.DB.Prepare("INSERT INTO cart(reference_id,product_id,quantity) VALUES($1,$2,$3)")
-			if err != nil {
-				fmt.Println("Error Inserting")
-				panic(err)
-			}
-			_, err = insertStatement.Exec(Ref_id, v.Product_id, v.Quantity)
-			if err != nil {
-				fmt.Println("Error Inserting")
-				panic(err)
-			}
-			response := Datastructures.Response{
-				Status:  http.StatusCreated,
-				Message: "Product Added Sucessfully",
-			}
-			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
-			w.WriteHeader(http.StatusCreated)
-			return
-		}
-
+	fmt.Println("Enter the number of Items you want to add to cart")
+	var NoOfItems int
+	fmt.Scanf("%d", &NoOfItems)
+	ItemsList := [1000]Datastructures.Cart{}
+	for i := 1; i <= NoOfItems; i++ {
+		ItemsList[i] = Support.GetMultipleCartInput(ReferenceId)
+		fmt.Print(ItemsList[i])
+		AddToCartConsoleHandler(ItemsList[i])
 	}
+
+}
+func AddItemToCart() {
+
 }

@@ -1,45 +1,74 @@
 package Handlers
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
-	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
-func CreateCart(w http.ResponseWriter, r *http.Request) {
-	name := mux.Vars(r)["name"]
-	fmt.Println(name)
+func CreateCartConsoleHandler() {
+	var Name string
+	var ResponseMessage string
+	fmt.Println("Please enter your Name")
+	// var product_id string
 
-	id := uuid.New()
+	_, err := fmt.Scanf("%s", &Name)
+	fmt.Println(Name)
+	if err != nil {
+		ResponseMessage = Support.ErrorScaningInput
+	}
+	route := CreateCart(Name)
+
+	if route == 441 {
+		ResponseMessage = Support.ErrorGetData
+
+	} else if route == 442 {
+		ResponseMessage = Support.ErrorCategoryId
+	} else if route == 443 {
+		ResponseMessage = Support.InvalidProductId
+	}
+	Support.PrintResponse(ResponseMessage)
+
+}
+func CreateCartRoute(w http.ResponseWriter, r *http.Request) {
+	Name := mux.Vars(r)["name"]
+	fmt.Println(Name)
+	route := CreateCart(Name)
+
+	var ResponseCode int
+	var ResponseMessage string
+	if route == 441 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorGetData
+
+	} else if route == 442 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorCategoryId
+	} else if route == 443 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.InvalidProductId
+	}
+	w.Header().Add("Content-Type", "application/json")
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
+
+}
+func CreateCart(Name string) int {
+
+	ReferenceId := uuid.New()
 	fmt.Println("Generated UUID:")
 
-	var newcart Datastructures.Cart
-	reqBody, err := ioutil.ReadAll(r.Body)
+	insertStatement, err := Support.DB.Prepare(query.CreateCart)
 	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to insert")
+		return 441
 	}
-
-	err = json.Unmarshal(reqBody, &newcart)
+	_, err = insertStatement.Exec(ReferenceId, Name)
 	if err != nil {
-		fmt.Fprintf(w, "error unmarshalling")
+		return 442
 	}
-	insertStatement, err := Support.DB.Prepare("INSERT INTO cart_reference(reference_id,create_date,username) VALUES($1,now(),$2)")
-	if err != nil {
-		fmt.Println("hello2")
-		panic(err)
-	}
-	_, err = insertStatement.Exec(id, name)
-	if err != nil {
-		fmt.Println("hello2")
-		panic(err)
-	}
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(id)
+	return 200
 
 }

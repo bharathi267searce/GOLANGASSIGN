@@ -11,7 +11,7 @@ func CheckProduct_id(id string) bool {
 	fmt.Println(id)
 
 	if !rows.Next() {
-		return false
+		return true
 	}
 	if err != nil {
 		fmt.Println(err)

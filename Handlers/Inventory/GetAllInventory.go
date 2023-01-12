@@ -1,60 +1,61 @@
 package Handlers
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"math"
 	"net/http"
-	"strconv"
 
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
-	"github.com/gorilla/mux"
 )
 
-func GetAllInventory(w http.ResponseWriter, r *http.Request) {
-	x := mux.Vars(r)["id"]
-	allproducts := []Datastructures.Inventory{}
-	page_no, err := strconv.Atoi(x)
-	if err != nil {
-		fmt.Println("page ni invalid")
+func GetAllInventoryRoute(w http.ResponseWriter, r *http.Request) {
+
+	route, AllInventory := GetAllInventory()
+
+	var ResponseCode int
+	var ResponseMessage any
+	if route == 441 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ExecStatementError
+	} else if route == 442 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ExecStatementError
+	} else {
+		ResponseCode = Support.Success
+		ResponseMessage = AllInventory
 	}
-	endlimit := page_no * 20
-	startlimit := endlimit - 20
-	fmt.Println(startlimit)
-	rows, err := Support.DB.Query("Select *  from inventory ")
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
+
+}
+func GetAllInventoryConsoleHandler() {
+
+	route, AllInventory := GetAllInventory()
+
+	var ResponseMessage any
+	if route == 441 {
+		ResponseMessage = Support.ExecStatementError
+	} else if route == 442 {
+		ResponseMessage = Support.ExecStatementError
+	} else {
+		ResponseMessage = AllInventory
+	}
+	Support.PrintResponse(ResponseMessage)
+
+}
+func GetAllInventory() (int, []Datastructures.Inventory) {
+	AllInventory := []Datastructures.Inventory{}
+	rows, err := Support.DB.Query(query.GetAllInventory)
+	if err != nil {
+		return 441, AllInventory
+	}
 	defer rows.Close()
 	var product Datastructures.Inventory
-	// var rawContent string
-	productlist := []map[string]any{}
-
 	for rows.Next() {
 		err := rows.Scan(&product.Product_id, &product.Quantity)
 		if err != nil {
-			log.Fatal(err)
+			return 442, AllInventory
 		}
-		// err = json.Unmarshal([]byte(rawContent), &product.Specification)
-		// if err != nil {
-		// 	fmt.Println("error marshaling")
-		// }
-
-		allproducts = append(allproducts, product)
-
-		// result := fmt.Sprintln(product.Price, product.Name)
-		// json.NewEncoder(w).Encode(result)
+		AllInventory = append(AllInventory, product)
 	}
-	endlimit = int(math.Min(float64(len(allproducts)), float64(endlimit)))
-	if startlimit >= 0 && startlimit < endlimit {
-		fmt.Println(allproducts[startlimit:endlimit])
-	}
-	for _, v := range allproducts {
-		newprod := map[string]any{
-			"Product_id": v.Product_id,
-			"Quantity":   v.Quantity,
-		}
-		productlist = append(productlist, newprod)
-	}
-	json.NewEncoder(w).Encode(allproducts)
-
+	return 200, AllInventory
 }

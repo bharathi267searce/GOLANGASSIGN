@@ -21,5 +21,7 @@ func DbConnect() {
 	}
 	DB = db
 	fmt.Printf("\nSuccessfully connected to database!\n")
+	// defer db.Close()
+	// defer DB.Close()
 
 }

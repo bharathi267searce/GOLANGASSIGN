@@ -1,47 +1,71 @@
 package Handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 	"github.com/gorilla/mux"
 )
 
-func DeleteProduct(w http.ResponseWriter, r *http.Request) {
+func DeleteProductRoute(w http.ResponseWriter, r *http.Request) {
 	x := mux.Vars(r)["id"]
-	// fmt.Println(x)
-	fmt.Println("bhbhbh")
 
-	res, err := Support.DB.Exec("DELETE FROM product_master WHERE product_id=$1", x)
+	var ResponseCode int
+	var ResponseMessage string
+	route := DeleteProduct(x)
+	if route == 442 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ExecStatementError
 
-	if err == nil {
-		fmt.Println("kjkjk")
-		count, err := res.RowsAffected()
-		if err == nil {
-			if count == 0 {
-				// result := fmt.Sprintln("The value Product_Id Does not exsits, eneter valid id")
-				// json.NewEncoder(w).Encode(result)
-				response := Datastructures.Response{
-					Status:  http.StatusForbidden,
-					Message: "The value Product_Id Does not exsits, enter valid id",
-				}
-				json.NewEncoder(w).Encode(response)
+	} else if route == 443 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.InvalidProductId
+	} else {
+		ResponseCode = Support.Accepted
+		ResponseMessage = Support.ProductDeleted
+	}
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
+}
+func DeleteProduct(ProductId string) int {
 
-				return
-			}
-
-		}
-
+	rows := Support.CheckProductId(ProductId)
+	if !rows.Next() {
+		return 443
+	}
+	_, err := Support.DB.Exec(query.DeleteProduct, ProductId)
+	if err != nil {
+		return 442
 	}
 
-	// result := fmt.Sprintln("The value is deleted sucessfully")
-	response := Datastructures.Response{
-		Status:  http.StatusAccepted,
-		Message: "The value is deleted sucessfully",
+	if err != nil {
+		return 404
 	}
-	json.NewEncoder(w).Encode(response)
+	return 200
 
+}
+func DeleteProductHandlerConsole() {
+
+	fmt.Println("Please enter a valid ProductId to delete")
+	var ProductId string
+	var ResponseMessage string
+	_, err := fmt.Scanln(&ProductId)
+	if err != nil {
+		ResponseMessage = Support.ErrorScaning
+		Support.PrintResponse(ResponseMessage)
+	}
+
+	route := DeleteProduct(ProductId)
+	if route == 442 {
+
+		ResponseMessage = Support.ExecStatementError
+
+	} else if route == 443 {
+		ResponseMessage = Support.InvalidProductId
+	} else {
+		ResponseMessage = Support.ProductDeleted
+	}
+	Support.PrintResponse(ResponseMessage)
+	return
 }

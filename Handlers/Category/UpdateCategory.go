@@ -4,55 +4,92 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 )
 
-func UpdateCategory(w http.ResponseWriter, r *http.Request) {
-	var category Datastructures.Category_master
+func UpdateCategoryRoute(w http.ResponseWriter, r *http.Request) {
+	var NewCategory Datastructures.Category_master
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data withid and name only in order to update")
+		Support.WriteResponse(Support.InvalidFormat, Support.InvalidCategoryFormat, w)
 	}
-	fmt.Println(reqBody)
-	err = json.Unmarshal(reqBody, &category)
+	err = json.Unmarshal(reqBody, &NewCategory)
 	if err != nil {
-		fmt.Printf("error marshaling")
+		Support.WriteResponse(Support.Error, Support.ErrorUnMarshaling, w)
 	}
-	fmt.Println("abababa")
-	fmt.Println(category)
-	if !Support.CheckCategory_id(category.Category_id) {
-		result := fmt.Sprintln("The category does not exsits enter a valid category id")
-		json.NewEncoder(w).Encode(result)
-		return
+	route := UpdateCategory(NewCategory)
+	var ResponseCode int
+	var ResponseMessage string
+	if route == 441 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorGetData
+
+	} else if route == 442 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorCategoryId
+	} else if route == 445 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ExecStatementError
+	} else {
+		ResponseCode = Support.Inserted
+		ResponseMessage = Support.CategoryUpdated
+		// w.WriteHeader(http.StatusCreated)
+
 	}
-	fmt.Println("hilli")
-	rows, err := Support.DB.Query("SELECT * from category_master WHERE category_id = $1", category.Category_id)
-	if err != nil {
-		fmt.Println("err in selecting category")
-	}
-	defer rows.Close()
+	w.Header().Add("Content-Type", "application/json")
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
+}
+func UpdateCategory(Category Datastructures.Category_master) int {
+	// var category Datastructures.Category_master = Datastructures.Category_master{}
 	var exsisting_category Datastructures.Category_master
-	for rows.Next() {
-		fmt.Println("worki")
+	// fmt.Print(Category)
+	rows := Support.CheckCategoryId(Category.Category_id)
+	defer rows.Close()
+	if !rows.Next() {
+		return 442
+	} else {
 		err := rows.Scan(&exsisting_category.Category_id, &exsisting_category.Category_name)
 		if err != nil {
-			fmt.Println("error scaning")
-			log.Fatal(err)
+			return 441
+		}
+		fmt.Print(Category)
+
+		if Category.Category_name == "" {
+			Category.Category_name = exsisting_category.Category_name
 		}
 
-		if category.Category_name == "" {
-			category.Category_name = exsisting_category.Category_name
-		}
-
-		fmt.Println(category)
+		fmt.Println(Category)
 		// db.Query("UPDATE product_master SET name=$1,sku=$2, price=$3,specification=$4 WHERE product_id =$5;", newproduct.Name, newproduct.Sku, newproduct.Price, json_specification, newproduct.Product_id)
-		Support.DB.Query("UPDATE category_master SET category_name=$1 WHERE category_id =$1;", category.Category_name, category.Category_id)
+		Support.DB.Query(query.UpdateCategory, Category.Category_name, Category.Category_id)
 		if err != nil {
-			fmt.Println("error")
+			return 445
 		}
+		return 200
 	}
+
+	return 441
+
+}
+func UpdateCategoryConsole() {
+	var NewCategory Datastructures.Category_master = Support.GetCategoryInput()
+	route := UpdateCategory(NewCategory)
+	fmt.Println(NewCategory)
+	var ResponseMessage string
+	if route == 441 {
+		ResponseMessage = Support.ErrorGetData
+	} else if route == 442 {
+		ResponseMessage = Support.InvalidCategoryId
+	} else if route == 445 {
+		ResponseMessage = Support.ExecStatementError
+	} else {
+		ResponseMessage = Support.CategoryUpdated
+		// w.WriteHeader(http.StatusCreated)
+
+	}
+	Support.PrintResponse(ResponseMessage)
+
 }

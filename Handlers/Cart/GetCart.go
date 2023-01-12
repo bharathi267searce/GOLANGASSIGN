@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
+	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
 	"github.com/gorilla/mux"
 )
@@ -23,7 +24,7 @@ func GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	items := []Datastructures.Product_view{}
-	rows, err := Support.DB.Query("select d.product_id,p.price,c.category_name,d.quantity from product_master p  inner join  category_master c on c.category_id=p.category_id inner join cart d on d.product_id = p.product_id where d.reference_id =$1 ", x)
+	rows, err := Support.DB.Query(query.GetCart, x)
 	if err != nil {
 		fmt.Println("page no invalid")
 	}
