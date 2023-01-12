@@ -9,7 +9,6 @@ import (
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
 	query "github.com/1234bharathi/GOLANGASSIGN/Query"
 	"github.com/1234bharathi/GOLANGASSIGN/Support"
-	// "github.com/gookit/validate"
 )
 
 func AddInventoryRoute(w http.ResponseWriter, r *http.Request) {
@@ -48,19 +47,6 @@ func AddInventoryRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("Content-Type", "application/json")
 	Support.WriteResponse(ResponseCode, ResponseMessage, w)
-
-	// v := validate.Struct(inventory)
-	// // v := validate.New(u)
-	// if v.Validate() { // validate ok
-
-	// 	fmt.Print("success")
-	// } else {
-	// 	fmt.Println(v.Errors) // all error messages
-	// 	//fmt.Println(v.Errors.One()) // returns a random error message text
-	// 	//fmt.Println(v.Errors.Field("Name")) // returns error messages of the field
-	// 	fmt.Println(v.Errors.Field("Age"))
-	// }
-
 }
 func AddInventory(Inventory Datastructures.Inventory) int {
 	rows := Support.CheckProductId(Inventory.Product_id)

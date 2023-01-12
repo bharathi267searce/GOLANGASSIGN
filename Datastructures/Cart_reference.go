@@ -1,8 +1,6 @@
 package Datastructures
 
-import (
-	"time"
-)
+import "time"
 
 type CartReference struct {
 	Referenceid string    `json:"reference_id"`

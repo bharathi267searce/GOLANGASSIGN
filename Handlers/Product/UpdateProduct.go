@@ -46,7 +46,7 @@ func UpdateProductRoute(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ResponseCode = Support.Inserted
 		ResponseMessage = Support.ProductUpdated
-		// w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusCreated)
 
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -74,8 +74,6 @@ func UpdateProductConsole() {
 		ResponseMessage = Support.ErrorUnMarshalingSpecification
 	} else {
 		ResponseMessage = Support.ProductUpdated
-		// w.WriteHeader(http.StatusCreated)
-
 	}
 	Support.PrintResponse(ResponseMessage)
 
@@ -100,7 +98,6 @@ func UpdateProduct(NewProduct Datastructures.Product_master) int {
 	var exsisting_product Datastructures.Product_master
 	var rawContent []byte
 	for rows.Next() {
-		fmt.Println("worki")
 		err := rows.Scan(&exsisting_product.Product_id, &exsisting_product.Name, &exsisting_product.Sku, &exsisting_product.Category_id, &exsisting_product.Price, &rawContent)
 		if err != nil {
 			return 441
@@ -126,14 +123,12 @@ func UpdateProduct(NewProduct Datastructures.Product_master) int {
 			NewProduct.Category_id = exsisting_product.Category_id
 		}
 		if NewProduct.Category_id != exsisting_product.Category_id {
-			// result := fmt.Sprint("Cannot alter the category id for product!!!\n please update in category table")
 			return 444
 		}
 
 		json_specification, err := json.Marshal(NewProduct.Specification)
 
 		fmt.Println(NewProduct)
-		// db.Query("UPDATE product_master SET name=$1,sku=$2, price=$3,specification=$4 WHERE product_id =$5;", newproduct.Name, newproduct.Sku, newproduct.Price, json_specification, newproduct.Product_id)
 		Support.DB.Query(query.UpdateProduct, NewProduct.Name, NewProduct.Sku, NewProduct.Price, json_specification, NewProduct.Product_id)
 		if err != nil {
 			return 445

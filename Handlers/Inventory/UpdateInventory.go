@@ -65,8 +65,6 @@ func UpdateInventory(Product Datastructures.Inventory) int {
 			Product.Quantity = ExsistingInventory.Quantity
 		}
 
-		fmt.Println(Product)
-		// db.Query("UPDATE product_master SET name=$1,sku=$2, price=$3,specification=$4 WHERE product_id =$5;", newproduct.Name, newproduct.Sku, newproduct.Price, json_specification, newproduct.Product_id)
 		Support.DB.Query(query.UpdateInventory, Product.Quantity, Product.Product_id)
 		if err != nil {
 			return 445
@@ -80,7 +78,6 @@ func UpdateInventory(Product Datastructures.Inventory) int {
 func UpdateInventoryConsole() {
 	var NewInventory Datastructures.Inventory = Support.GetInventoryInput()
 	route := UpdateInventory(NewInventory)
-	fmt.Println(NewInventory)
 	var ResponseMessage string
 	if route == 441 {
 		ResponseMessage = Support.ErrorGetData
@@ -90,7 +87,6 @@ func UpdateInventoryConsole() {
 		ResponseMessage = Support.ExecStatementError
 	} else {
 		ResponseMessage = Support.InventoryUpdated
-		// w.WriteHeader(http.StatusCreated)
 	}
 	Support.PrintResponse(ResponseMessage)
 }

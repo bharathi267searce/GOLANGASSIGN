@@ -35,7 +35,6 @@ func GetCartInput() Datastructures.Cart {
 func GetMultipleCartInput(ReferenceId string) Datastructures.Cart {
 	var Cart Datastructures.Cart
 	fmt.Println("Please enter the valid Product ID")
-	// var product_id string
 
 	_, err := fmt.Scanf("%s", &Cart.Product_id)
 	if err != nil {

@@ -24,7 +24,7 @@ func Console() {
 	} else if choice == 3 {
 		ConsoleInterface.InventoryConsole()
 	} else if choice == 4 {
-
 		ConsoleInterface.CartConsole()
 	}
+	return
 }

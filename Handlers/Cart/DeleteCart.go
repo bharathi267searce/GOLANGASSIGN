@@ -11,11 +11,12 @@ import (
 )
 
 func DeleteCartRoute(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+
 	var ReferenceId string
 	var ProductId string
 	var ResponseCode int
 	var ResponseMessage string
+	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		ResponseCode = Support.NotFound
 		ResponseMessage = Support.InvalidCartFormat
@@ -67,16 +68,18 @@ func DeleteCart(ReferenceId, ProductId string) int {
 
 }
 func DeleteCartConsoleHandler() {
-	fmt.Println("Enter the product ID")
-	var ProductId string
-	_, err := fmt.Scanf("%s", ProductId)
-	if err != nil {
-		fmt.Println(Support.ErrorScaningInput)
-	}
 	fmt.Println("Enter the Reference ID")
 	var ReferenceId string
-	_, err = fmt.Scan(ReferenceId)
+	_, err := fmt.Scanf("%s", &ReferenceId)
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println(Support.ErrorScaningInput)
+	}
+	fmt.Println("Enter the product ID")
+	var ProductId string
+	_, err = fmt.Scanf("%s", &ProductId)
+	if err != nil {
+		fmt.Println(err)
 		fmt.Println(Support.ErrorScaningInput)
 	}
 

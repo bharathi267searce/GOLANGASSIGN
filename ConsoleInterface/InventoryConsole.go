@@ -76,19 +76,6 @@ func GetInventory() {
 
 }
 
-// func GetAllInventory() {
-// 	Handlers.GetAllInventoryHandlerConsole()
-// 	var cont string
-// 	_, err := fmt.Scanln(&cont)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	if cont == "yes" {
-// 		InventoryConsole()
-// 	}
-// 	return
-// }
-
 func UpdateInventory() {
 	Handlers.UpdateInventoryConsole()
 	fmt.Println("Do you want to continue? (yes or no)")

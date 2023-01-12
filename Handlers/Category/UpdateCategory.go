@@ -37,16 +37,14 @@ func UpdateCategoryRoute(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ResponseCode = Support.Inserted
 		ResponseMessage = Support.CategoryUpdated
-		// w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusCreated)
 
 	}
 	w.Header().Add("Content-Type", "application/json")
 	Support.WriteResponse(ResponseCode, ResponseMessage, w)
 }
 func UpdateCategory(Category Datastructures.Category_master) int {
-	// var category Datastructures.Category_master = Datastructures.Category_master{}
 	var exsisting_category Datastructures.Category_master
-	// fmt.Print(Category)
 	rows := Support.CheckCategoryId(Category.Category_id)
 	defer rows.Close()
 	if !rows.Next() {
@@ -56,14 +54,11 @@ func UpdateCategory(Category Datastructures.Category_master) int {
 		if err != nil {
 			return 441
 		}
-		fmt.Print(Category)
 
 		if Category.Category_name == "" {
 			Category.Category_name = exsisting_category.Category_name
 		}
 
-		fmt.Println(Category)
-		// db.Query("UPDATE product_master SET name=$1,sku=$2, price=$3,specification=$4 WHERE product_id =$5;", newproduct.Name, newproduct.Sku, newproduct.Price, json_specification, newproduct.Product_id)
 		Support.DB.Query(query.UpdateCategory, Category.Category_name, Category.Category_id)
 		if err != nil {
 			return 445
@@ -87,8 +82,6 @@ func UpdateCategoryConsole() {
 		ResponseMessage = Support.ExecStatementError
 	} else {
 		ResponseMessage = Support.CategoryUpdated
-		// w.WriteHeader(http.StatusCreated)
-
 	}
 	Support.PrintResponse(ResponseMessage)
 

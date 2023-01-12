@@ -24,13 +24,10 @@ func CartConsole() {
 	} else if choice == 3 {
 		AddMultipleItemsToCart()
 	} else if choice == 4 {
-		DeleteCategory()
+		DeleteCart()
+	} else if choice == 5 {
+		GetAllCart()
 	}
-	//  else if choice == 4 {
-	// 	GetAllCategory()
-	// } else if choice == 5 {
-	// 	UpdateCategory()
-	// }
 	return
 }
 
@@ -80,49 +77,18 @@ func AddItemToCart() {
 	}
 }
 
-// func GetCategory() {
-// 	Handlers.GetCategoryConsoleHandler()
-
-// 	fmt.Println("Do you want to continue? (yes or no)")
-// 	var cont string
-// 	_, err := fmt.Scanln(&cont)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	if cont == "yes" {
-// 		CategoryConsole()
-// 	}
-// 	return
-
-// }
-
-// func GetAllCategory() {
-// 	Handlers.GetAllCategoryHandlerConsole()
-// 	var cont string
-// 	_, err := fmt.Scanln(&cont)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	if cont == "yes" {
-// 		CategoryConsole()
-// 	}
-// 	return
-// }
-
-// func UpdateCategory() {
-// 	Handlers.UpdateCategoryConsole()
-// 	fmt.Println("Do you want to continue? (yes or no)")
-// 	var cont string
-// 	_, err := fmt.Scanln(&cont)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	if cont == "yes" {
-// 		CategoryConsole()
-// 	} else {
-// 		return
-// 	}
-// }
+func GetAllCart() {
+	Handlers.GetCartConsoleHandler()
+	var cont string
+	_, err := fmt.Scanln(&cont)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if cont == "yes" {
+		CartConsole()
+	}
+	return
+}
 
 func DeleteCart() {
 	Handlers.DeleteCartConsoleHandler()

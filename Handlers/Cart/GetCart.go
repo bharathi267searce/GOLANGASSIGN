@@ -1,9 +1,7 @@
 package Handlers
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/1234bharathi/GOLANGASSIGN/Datastructures"
@@ -12,41 +10,81 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func GetCart(w http.ResponseWriter, r *http.Request) {
-	x := mux.Vars(r)["id"]
-	if Support.CheckReference_id(x) == false {
-		response := Datastructures.Response{
-			Status:  http.StatusForbidden,
-			Message: "The Reference_id does not exsits enter a valid  id",
-		}
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-		return
+func GetCartConsoleHandler() {
+
+	fmt.Println("Enter the ReferenceID")
+	var ReferenceID string
+	_, err := fmt.Scanf("%s", &ReferenceID)
+	var ResponseMessage any
+	if err != nil {
+		ResponseMessage = Support.ErrorScaningInput
+	}
+
+	route, Cart := GetCart(ReferenceID)
+
+	if route == 441 {
+		ResponseMessage = Support.InvalidReferenceId
+	} else if route == 442 {
+		ResponseMessage = Support.ExecStatementError
+	} else if route == 443 {
+		ResponseMessage = Support.ErrorGetData
+	} else {
+		ResponseMessage = Cart
+	}
+	Support.PrintResponse(ResponseMessage)
+
+}
+func GetCart(ReferenceId string) (int, any) {
+
+	rows := Support.CheckReferenceId(ReferenceId)
+	if !rows.Next() {
+		return 441, Support.InvalidReferenceId
 	}
 	items := []Datastructures.Product_view{}
-	rows, err := Support.DB.Query(query.GetCart, x)
+	rows, err := Support.DB.Query(query.GetCart, ReferenceId)
 	if err != nil {
-		fmt.Println("page no invalid")
+		return 442, Support.ExecStatementError
 	}
 	defer rows.Close()
 	item := Datastructures.Product_view{}
-	// itemlist := []map[string]any{}
-
+	var sum float32
 	for rows.Next() {
 		err := rows.Scan(&item.Product_id, &item.Price, &item.Category_name, &item.Quantity)
 		if err != nil {
-			log.Fatal(err)
+			return 443, Support.ErrorGetData
 		}
-		// err = json.Unmarshal([]byte(rawContent), &product.Specification)
-		// if err != nil {
-		// 	fmt.Println("error marshaling")
-		// }
 
+		sum += item.Price
 		items = append(items, item)
 
 	}
+	Cart := map[string]interface{}{
+		"Total Price": sum,
+		"data":        items,
+	}
+	return 200, Cart
 
+}
+func GetCartRoute(w http.ResponseWriter, r *http.Request) {
+	ReferenceId := mux.Vars(r)["id"]
+	route, Cart := GetCart(ReferenceId)
+	var ResponseCode int
+	var ResponseMessage any
+
+	if route == 441 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.InvalidReferenceId
+	} else if route == 442 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ExecStatementError
+	} else if route == 443 {
+		ResponseCode = Support.Error
+		ResponseMessage = Support.ErrorGetData
+	} else {
+		ResponseCode = Support.Success
+		ResponseMessage = Cart
+	}
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(items)
+	Support.WriteResponse(ResponseCode, ResponseMessage, w)
 
 }

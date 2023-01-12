@@ -67,16 +67,7 @@ func GetCategory(GetCategoryId string) (int, Datastructures.Category_master) {
 		return 200, category
 
 	}
-	// rows, err := Support.DB.Query(query.GetCategory, GetCategoryId)
-	// if err != nil {
-	// 	return 441, category
-	// }
-	// defer rows.Close()
-
-	// for rows.Next() {
-
-	// }
 
 	return 200, category
-	// return 404, category
+
 }

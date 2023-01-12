@@ -10,7 +10,6 @@ import (
 func GetProductInput() Datastructures.Product_master {
 	var NewProduct Datastructures.Product_master
 	fmt.Println("Please enter the valid product id")
-	// var product_id string
 
 	_, err := fmt.Scanf("%s", &NewProduct.Product_id)
 	if err != nil {
@@ -52,10 +51,9 @@ func GetProductInput() Datastructures.Product_master {
 	fmt.Println("Please enter the SKU")
 
 	_, err = fmt.Scanln(&NewProduct.Sku)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println("Please enter the Category id")
 
 	_, err = fmt.Scanf("%s", &NewProduct.Category_id)

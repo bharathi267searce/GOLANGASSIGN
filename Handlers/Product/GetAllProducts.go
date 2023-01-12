@@ -49,9 +49,6 @@ func GetAllProducts(PageNo, ItemsPerPage int) ([]Datastructures.Product, int) {
 	defer rows.Close()
 
 	var product Datastructures.Product
-	// var rawContent string
-	// productlist := []map[string]any{}
-
 	for rows.Next() {
 		err := rows.Scan(&product.Product_id, &product.Name, &product.Price)
 		if err != nil {
@@ -61,27 +58,11 @@ func GetAllProducts(PageNo, ItemsPerPage int) ([]Datastructures.Product, int) {
 		allproducts = append(allproducts, product)
 	}
 
-	// for _, v := range allproducts {
-	// 	newprod := map[string]any{
-	// 		"product_id": v.Product_id,
-	// 		"name":       v.Name,
-	// 		"price":      v.Price,
-	// 	}
-	// 	productlist = append(productlist, newprod)
-	// }
 	endlimit = int(math.Min(float64(len(allproducts)), float64(endlimit)))
 	startlimit = int(math.Min(float64(len(allproducts)-2), float64(startlimit)))
 
 	if startlimit >= 0 && startlimit < endlimit {
-		// fmt.Println(productlist[startlimit:endlimit])
 		return allproducts[startlimit:endlimit], 200
-		// result := fmt.Sprintln(productlist[startlimit:endlimit])
-
-		// response := Datastructures.Response{
-		// 	Status:  http.StatusAccepted,
-		// 	Message: result,
-		// }
-		// json.NewEncoder(w).Encode(response)
 	}
 	return allproducts, 442
 }

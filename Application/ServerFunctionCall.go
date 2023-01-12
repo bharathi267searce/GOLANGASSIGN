@@ -30,19 +30,14 @@ func ServerFunctionCall() {
 	router.HandleFunc("/updateCategory", Category.UpdateCategoryRoute).Methods("PUT")
 	// inventory handlers call
 	router.HandleFunc("/addInventory", Inventory.AddInventoryRoute).Methods("POST")
-	router.HandleFunc("/getInventory/{id}", Inventory.GetInventory).Methods("GET")
 	router.HandleFunc("/getAllInventory", Inventory.GetAllInventoryRoute).Methods("GET")
 	router.HandleFunc("/deleteInventory/{id}", Inventory.DeleteInventoryRoute).Methods("DELETE")
 	router.HandleFunc("/updateInventory", Inventory.UpdateInventoryRoute).Methods("PUT")
-
 	//cart handlers
-
 	router.HandleFunc("/addToCart", Cart.AddToCartRoute).Methods("POST")
 	router.HandleFunc("/addItemsToCart/{Ref_id}", Cart.AddItemsToCartRoute).Methods("POST")
 	router.HandleFunc("/createCart/{name}", Cart.CreateCartRoute).Methods("POST")
-
-	router.HandleFunc("/getCart/{id}", Cart.GetCart).Methods("GET")
+	router.HandleFunc("/getCart/{id}", Cart.GetCartRoute).Methods("GET")
 	router.HandleFunc("/deleteCart/{id}", Cart.DeleteCartRoute).Methods("DELETE")
-	// router.HandleFunc("/updateCart", updateCart).Methods("PUT")
 	log.Fatal(http.ListenAndServe(":8084", router))
 }

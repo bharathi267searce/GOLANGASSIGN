@@ -71,7 +71,6 @@ func GetProduct(ProductId string) (int, Datastructures.ProductInfo) {
 	}
 	defer rows.Close()
 
-	// var product Datastructures.Product_master
 	var rawContent string
 	for rows.Next() {
 

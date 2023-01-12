@@ -9,7 +9,6 @@ import (
 func GetCategoryInput() Datastructures.Category_master {
 	var Category Datastructures.Category_master
 	fmt.Println("Please enter the valid Category id")
-	// var product_id string
 
 	_, err := fmt.Scanf("%s", &Category.Category_id)
 	if err != nil {
